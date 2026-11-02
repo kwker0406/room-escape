@@ -1,0 +1,512 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>탄소 발자국 유형 검사</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: 땡땡이 배경 위에 스티커를 붙인 스크랩북. 굵은 잉크 테두리 + 밀린 그림자. 의도적인 단일(밝은) 테마 */
+:root{
+  --ink:#2B1E3F; --paper:#FFFFFF; --bg:#FFF0F6; --dot:#FFD0E4; --muted:#6B5B7B;
+  --pink:#FF7EB6; --butter:#FFE066; --lime:#B6F05A; --sky:#7FD3FF; --tang:#FF8A3D; --red:#FF6B4A; --lilac:#C9B6FF;
+  --display:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{background:var(--bg) radial-gradient(var(--dot) 2.2px,transparent 2.8px) 0 0/22px 22px;color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+.wrap{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.2;text-wrap:balance;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,li:focus-visible{outline:3px dashed var(--ink);outline-offset:3px}
+.sticker{background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink)}
+.note{font-size:13px;color:var(--muted)}
+
+.btn{display:flex;justify-content:center;align-items:center;border:3px solid var(--ink);border-radius:18px;padding:14px 22px;
+  font-family:var(--display);font-size:22px;background:var(--butter);box-shadow:5px 5px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.btn:active{transform:translate(5px,5px);box-shadow:0 0 0 var(--ink)}
+.btn.alt{background:var(--paper);font-size:19px}
+
+/* 시작 화면 */
+.hero{display:flex;flex-direction:column;gap:18px;text-align:center;align-items:center}
+.hero h1{font-size:clamp(44px,13vw,76px);line-height:1.05;text-shadow:4px 4px 0 var(--pink)}
+.hero .lead{font-size:17px;max-width:26em}
+.parade{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;padding:16px}
+.parade div{aspect-ratio:1;max-width:100%;border:3px solid var(--ink);border-radius:18px;box-shadow:3px 3px 0 var(--ink);display:grid;place-items:center;padding:4px}
+.parade div:nth-child(odd){rotate:-4deg} .parade div:nth-child(even){rotate:3deg}
+.parade svg{width:100%;height:auto}
+.parade div:hover svg{animation:wiggle .5s ease-in-out}
+@keyframes wiggle{25%{rotate:-8deg}75%{rotate:8deg}}
+.hook{font-family:var(--display);font-size:20px}
+.facts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.facts span{background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font-size:14px}
+.hero .btn{width:min(100%,340px);font-size:26px;padding:18px}
+
+/* 문항 */
+.steps{display:flex;gap:3px;justify-content:space-between}
+.steps svg{width:100%;max-width:26px;height:auto;transition:transform .2s}
+.steps svg.on{transform:rotate(-12deg)}
+.qcard{padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.qnum{font-family:var(--display);font-size:18px}
+.qcat{font-family:var(--display);font-size:15px;padding:2px 12px;border:2px solid var(--ink);border-radius:999px;rotate:3deg}
+.question{font-size:clamp(25px,6.6vw,32px);min-height:calc(3 * 1.2em);display:flex;align-items:center}
+.answers{display:flex;flex-direction:column;gap:12px}
+.ans{display:flex;gap:12px;align-items:center;text-align:left;padding:12px 14px;min-height:calc(2 * 1.65em + 30px);border-radius:16px;
+  border:3px solid var(--ink);background:var(--paper);box-shadow:3px 3px 0 var(--ink);transition:transform .1s,box-shadow .1s,background .1s}
+.ans:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+.ans.picked{background:var(--lime);transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.ans b{flex:none;width:34px;height:34px;border:2px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:400}
+.ans:nth-child(1) b{background:var(--pink)} .ans:nth-child(2) b{background:var(--sky)} .ans:nth-child(3) b{background:var(--butter)} .ans:nth-child(4) b{background:var(--lilac)}
+.back{align-self:flex-start;background:none;border:0;font-family:var(--display);font-size:16px;color:var(--muted);text-decoration:underline;padding:0}
+
+/* 측정 중 */
+.loading{min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;text-align:center}
+#loadChar{animation:bounce .5s ease-in-out infinite alternate}
+.loading svg{width:150px;height:auto;display:block;filter:brightness(0) opacity(.85)}
+@keyframes bounce{to{transform:translateY(-14px) scaleY(1.04)}}
+.loading p{font-family:var(--display);font-size:24px}
+
+/* 결과 */
+.rhero{padding:22px 18px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;overflow:hidden}
+.rhero .intro{font-family:var(--display);font-size:17px}
+.rhero .stage{display:flex;align-items:flex-end;justify-content:center;gap:6px;width:100%}
+.rhero .stage svg{width:min(58vw,220px);height:auto;rotate:-3deg;animation:pop .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+.bubble{position:relative;align-self:flex-start;background:var(--paper);border:3px solid var(--ink);border-radius:18px;padding:8px 12px;
+  font-family:var(--display);font-size:16px;max-width:9.5em;rotate:4deg;box-shadow:3px 3px 0 var(--ink)}
+.bubble::after{content:"";position:absolute;left:-12px;bottom:14px;width:16px;height:16px;background:var(--paper);
+  border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.rhero .name{font-size:clamp(38px,11vw,56px);text-shadow:3px 3px 0 var(--paper)}
+.rhero .desc{font-size:17px;max-width:30em;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:12px 14px;text-align:left}
+
+.meter{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.meter-row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:20px}
+.meter-row strong{font-weight:400;font-size:36px;font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:22px;border:3px solid var(--ink);border-radius:999px;background:linear-gradient(90deg,var(--lime),var(--butter),var(--red))}
+.gauge svg{position:absolute;top:-30px;width:24px;height:auto;transform:translateX(-12px);transition:left .9s cubic-bezier(.3,1.4,.5,1)}
+.gauge-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+.sec{display:flex;flex-direction:column;gap:12px}
+.label{align-self:flex-start;font-family:var(--display);font-size:21px;padding:4px 14px;border:3px solid var(--ink);border-radius:12px;rotate:-2deg;box-shadow:3px 3px 0 var(--ink)}
+.box{padding:16px 18px}
+.box ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+
+.receipt{font-family:var(--mono);font-size:14px;background:var(--paper);padding:20px 18px;border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);
+  display:flex;flex-direction:column;gap:12px;rotate:.6deg}
+.receipt .r-title{text-align:center;letter-spacing:.15em;border-bottom:2px dashed var(--ink);padding-bottom:10px}
+.r-row{display:grid;grid-template-columns:4.2em 1fr 3.2em;gap:10px;align-items:center}
+.r-bar{height:14px;border:2px solid var(--ink);border-radius:8px;background:var(--bg);overflow:hidden}
+.r-bar i{display:block;height:100%;border-right:2px solid var(--ink)}
+.r-lv{text-align:right}
+.r-total{border-top:2px dashed var(--ink);padding-top:10px;display:flex;justify-content:space-between}
+
+.src{font-size:13px;color:var(--muted);margin-top:8px}
+.ssp svg{width:100%;height:auto;display:block}
+
+.mates{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mate{padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0}
+.mate svg{width:84px;height:auto}
+.mate small{font-family:var(--display);font-size:14px;padding:0 10px;border:2px solid var(--ink);border-radius:999px}
+.mate strong{font-family:var(--display);font-weight:400;font-size:18px;margin-top:4px}
+.mate span{font-size:14px}
+
+.missions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.missions li{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.missions li::before{content:"";flex:none;width:24px;height:24px;border:3px solid var(--ink);border-radius:7px;background:var(--paper)}
+.missions li.done::before{background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12l5 5 9-10' fill='none' stroke='%232B1E3F' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/18px no-repeat}
+.missions li.done span{text-decoration:line-through;color:var(--muted)}
+
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+.actions .btn{flex:1 1 220px}
+.all{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.all div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border:3px solid var(--ink);border-radius:16px;text-align:center;min-width:0}
+.all div.me{box-shadow:4px 4px 0 var(--ink);rotate:-3deg}
+.all svg{width:100%;max-width:70px;height:auto}
+.all strong{font-family:var(--display);font-weight:400;font-size:13px;line-height:1.25}
+@media (max-width:420px){.all{grid-template-columns:repeat(2,1fr)}.parade{gap:8px;padding:8px}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+
+<div class="wrap">
+
+<section id="intro" class="hero">
+  <h1>탄소 발자국<br>유형 검사</h1>
+  <p class="lead">등교, 급식, 쇼핑, 에어컨, 유튜브. 평범한 하루에 숨은 내 탄소 습관을 탈탈 털어 보자.</p>
+  <div class="parade" id="parade" aria-hidden="true"></div>
+  <p class="hook">이 여덟 친구 중 나는 누구?</p>
+  <div class="facts"><span>15문항</span><span>약 3분</span><span>통합과학 연계</span></div>
+  <button class="btn" id="start">검사 시작하기</button>
+  <p class="note">실제 배출량을 계산하는 검사가 아닙니다. 생활 습관을 돌아보는 재미형 테스트입니다.</p>
+</section>
+
+<section id="quiz" class="wrap" hidden>
+  <div class="steps" id="steps" aria-hidden="true"></div>
+  <div class="sticker qcard">
+    <div class="qhead"><span class="qnum" id="qnum">1번째 발자국</span><span class="qcat" id="qcat">이동</span></div>
+    <h2 class="question" id="qtext"></h2>
+    <div class="answers" id="answers"></div>
+  </div>
+  <button class="back" id="back" hidden>이전 질문으로</button>
+</section>
+
+<section id="loading" class="loading" hidden>
+  <div id="loadChar"></div>
+  <p id="loadMsg">발자국 크기 재는 중…</p>
+</section>
+
+<section id="result" class="wrap" hidden></section>
+
+</div>
+
+<script>
+const CATS = {move:"이동", food:"식탁", shop:"쇼핑", power:"전기", digi:"디지털"};
+const CAT_COLOR = {move:"var(--sky)", food:"var(--tang)", shop:"var(--butter)", power:"var(--lilac)", digi:"var(--pink)"};
+
+// 각 문항의 보기 점수: 0(지구 친구) ~ 3(지구 비상)
+const Q = [
+ {c:"move", q:"등교 마감 8시 20분. 지금은 8시 5분. 당신은?", a:[
+  ["이미 교문 앞. 두 다리는 나의 친환경 엔진",0],["버스 안. 기사님과 눈빛으로 교감 중",1],
+  ["\"엄마아아—\" 자가용 호출 버튼 ON",2],["택시 앱 켠다. 지각보다 무서운 건 없다",3]]},
+ {c:"food", q:"급식 선택제! 제육볶음 vs 두부조림", a:[
+  ["두부조림. 콩도 엄연한 단백질이다",0],["제육 조금, 반찬은 골고루",1],
+  ["아무거나 받고 반 남긴다. 배가 안 고팠다",2],["\"고기 없는 급식은 급식이 아니다\" 제육 곱빼기",3]]},
+ {c:"shop", q:"장바구니에 9,900원 티셔츠가 떴다.", a:[
+  ["비슷한 옷이 이미 세 장. 조용히 창 닫기",0],["진짜 필요한지 하루 묵혀 본다",1],
+  ["일단 결제. 안 어울리면 반품하면 되지",2],["색깔별로 세 장. 싸니까 이득이다",3]]},
+ {c:"power", q:"한여름 교실, 에어컨 리모컨이 내 손에 들어왔다.", a:[
+  ["26℃ 근처 + 선풍기 콤보. 나는 효율의 신",0],["24℃. 적당히 시원하게",1],
+  ["켜 놓고 문 활짝. 복도까지 시원해져라",2],["18℃ 터보. 교실을 북극으로 만든다",3]]},
+ {c:"digi", q:"하교 후 침대에 누워 영상을 켰다.", a:[
+  ["보려던 것 하나 보고 끈다",0],["한두 시간쯤. 이 정도는 휴식이지",1],
+  ["고화질로 틀어 놓고 그대로 잠든다",2],["자동 재생의 늪. 눈 떠 보니 새벽 2시",3]]},
+ {c:"move", q:"걸어서 5분 거리 편의점에 가야 한다.", a:[
+  ["슬리퍼 끌고 산책 겸 걸어간다",0],["자전거 타고 휘리릭",1],
+  ["전동 킥보드. 5분도 길다",2],["가족 차 얻어 타고 드라이브 스루처럼",3]]},
+ {c:"food", q:"마라탕 가게. 당신의 바구니는?", a:[
+  ["버섯·청경채·두부. 나는 마라 초식동물",0],["고기 한 줌, 채소 한 줌",1],
+  ["다 담고 절반 남김. 위 크기를 몰랐다",2],["소고기·양고기 산더미. 채소는 장식",3]]},
+ {c:"shop", q:"실기 시간, 종이에 첫 획부터 삐끗했다.", a:[
+  ["뒷면, 구석까지 연습장으로 끝까지 쓴다",0],["새 종이를 쓰되 망친 종이는 모아 둔다",1],
+  ["한 획 틀리면 바로 새 종이. 완벽주의자다",2],["화방 쇼핑이 곧 영감이다. 새 재료 주문",3]]},
+ {c:"power", q:"방에서 나갈 때 당신은?", a:[
+  ["불 끄고 멀티탭 스위치까지 딸깍",0],["불만 끈다",1],
+  ["\"엄마가 끄겠지\"",2],["우리 집은 24시간 불 꺼지지 않는 등대",3]]},
+ {c:"digi", q:"휴대폰 사진첩 상태는?", a:[
+  ["주기적으로 정리. 흔들린 사진은 즉시 삭제",0],["가끔 생각나면 정리",1],
+  ["3만 장. 같은 셀카 47장 연사",2],["클라우드 용량 추가 결제까지 했다",3]]},
+ {c:"food", q:"냉장고 구석에서 3일 된 반찬을 발견했다.", a:[
+  ["오늘 저녁에 구조 작전",0],["냄새 맡아 보고 괜찮으면 먹는다",1],
+  ["못 본 척 문 닫기. 다음 주의 내가 처리",2],["바로 음식물 쓰레기행 + 배달 주문",3]]},
+ {c:"shop", q:"카페에서 음료를 주문한다.", a:[
+  ["가방에서 텀블러 꺼내기",0],["매장용 머그컵에 마신다",1],
+  ["텀블러는 집에 다섯 개. 오늘도 일회용 컵",2],["일회용 컵+빨대+홀더+캐리어 풀세트",3]]},
+ {c:"move", q:"방학 가족 여행 투표. 내 한 표는?", a:[
+  ["동네 근처 캠핑. 멀리 가야 맛인가",0],["기차 타고 부산 바다",1],
+  ["자가용 로드트립으로 전국 일주",2],["비행기 타고 해외, 주말엔 제주도 한 번 더",3]]},
+ {c:"power", q:"한겨울, 집 안에서 당신의 복장은?", a:[
+  ["내복+수면양말 장착. 보일러는 적당히",0],["긴팔 입고 보일러 보통",1],
+  ["전기장판+히터+보일러 3중 방어",2],["반팔·반바지에 아이스크림. 보일러 풀가동",3]]},
+ {c:"digi", q:"휴대폰을 바꾸는 주기는?", a:[
+  ["액정에 테이프 붙여 4년째 쓰는 중",0],["고장 나면 바꾼다",1],
+  ["약정 끝나면 새 폰",2],["신상 나오면 바로. 폰은 패션이다",3]]},
+];
+
+const TYPES = {
+ green:{name:"광합성 하는 인간", tag:"혹시… 엽록체 있으세요?", bg:"var(--lime)",
+  desc:"걷고, 남김없이 먹고, 끄고, 고쳐 쓰는 당신. 당신이 숨만 쉬어도 주변 나무들이 안심합니다. 지구가 명절마다 안부 문자를 보내는 사람.",
+  traits:["엘리베이터 버튼을 누르면 양심이 따끔하다","남은 반찬을 보면 구조 본능이 발동한다","친구 텀블러까지 챙겨 온다. 잔소리도 함께 배달한다"],
+  caution:"잔소리 배출량이 높습니다. 친구들의 귀가 온난화 중.",
+  sci:"식물은 광합성으로 태양의 빛에너지를 포도당 속 화학 에너지로 바꾸며 이산화 탄소를 흡수한다. 당신은 엽록체가 없지만, 이산화 탄소를 '덜 내놓는' 방식으로 지구의 탄소 균형을 돕는 셈이다.",
+  src:"통합과학 교재 p.102 태양 에너지의 전환(빛에너지 → 화학 에너지)",
+  best:["fire","당신이 구원할 수 있는 유일한 존재"], worst:["shop","만나는 순간 잔소리 폭발"],
+  missions:["오늘 실천한 것 하나를 친구에게 자랑하기 (잔소리 말고 자랑)","주변 한 명을 텀블러 세계로 영입하기","고장 난 물건 하나 고쳐 쓰기 도전"]},
+ fire:{name:"걸어 다니는 화력발전소", tag:"지나간 자리엔 CO₂만 남는다", bg:"#FFB4A2",
+  desc:"택시 타고 마라탕 먹으러 가서 반 남기고, 에어컨 18℃에 영상 틀어 놓고 잠드는 당신. 북극곰이 당신 이름을 외우고 있습니다.",
+  traits:["'잠깐인데 뭐'를 하루 20번 말한다","택배 기사님과 이미 안부를 묻는 사이","같은 날 에어컨과 보일러를 둘 다 켜 본 적 있다"],
+  caution:"당신 혼자 지구 온도를 올리는 건 아닙니다. 그런데 꽤 올립니다.",
+  sci:"화석 연료가 탈 때 탄소가 산소와 결합해 이산화 탄소가 된다. 대기 중 이산화 탄소가 늘면 지표가 내보내는 에너지를 대기가 더 많이 붙잡아 온실 효과가 강해지고, 지구 평균 기온이 올라간다.",
+  src:"통합과학 교재 p.124 지구 환경 변화와 인간 생활",
+  best:["green","당신을 바꿀 마지막 희망"], worst:["shop","둘이 만나면 지구 비상사태 선포"],
+  missions:["딱 하나만! 1km 이내는 걸어가기","급식 잔반 제로 1일 챌린지","방 나설 때 불 끄기 3일 연속"]},
+ mid:{name:"반반 치킨형 지구인", tag:"다 조금씩, 그래서 애매하게", bg:"var(--butter)",
+  desc:"양념 반 후라이드 반처럼, 착한 습관 반 귀찮은 습관 반. 지구 입장에서 당신은 '가능성 있는 신입사원'입니다.",
+  traits:["텀블러를 사긴 샀다. 집에 있다","불은 끄는데 멀티탭은 못 본 척","기분 좋은 날엔 걷고, 귀찮은 날엔 택시"],
+  caution:"마음만 먹으면 금방 광합성 인간이 됩니다. 아직 마음을 안 먹었을 뿐.",
+  sci:"탄소 발자국은 이동, 식사, 소비, 전기 사용처럼 생활 속에서 직접·간접으로 내보내는 온실 기체의 양을 모두 더한 것이다. 큰 한 방보다 작은 습관 여러 개가 모여 크기가 정해진다.",
+  src:"통합과학 교재 p.124 지구 환경 변화와 인간 생활",
+  best:["green","데려가서 개조해 줄 사람"], worst:["fire","나쁜 쪽 반이 점점 커진다"],
+  missions:["영수증에서 가장 긴 막대 하나만 골라 줄이기","텀블러를 '집'이 아닌 '가방'에 넣기","멀티탭 스위치와 화해하기"]},
+ move:{name:"바퀴 달린 귀족", tag:"두 다리는 액세서리일 뿐", bg:"var(--sky)",
+  desc:"5분 거리도 바퀴가 있어야 움직이는 귀하신 몸. 걸음 수 앱이 당신을 걱정하고 있습니다.",
+  traits:["택시 앱 '자주 가는 곳' 1위가 학교","'걸어서 10분'을 '엄청 멀다'로 번역한다","킥보드 배터리 잔량에 기분이 달려 있다"],
+  caution:"허벅지 근육이 퇴사를 고민 중입니다.",
+  sci:"휘발유·경유 같은 화석 연료에는 아주 오래전 생물이 저장한 태양 에너지가 화학 에너지로 들어 있다. 엔진은 이 화학 에너지를 운동 에너지로 바꾸는데, 이때 이산화 탄소가 나오고 상당한 에너지가 열로 흩어진다.",
+  src:"통합과학 교재 p.102 해 보기: 태양 에너지 → 화학 에너지(화석 연료) → 운동 에너지(자동차)",
+  best:["green","등굣길 걷기 메이트"], worst:["fire","둘이 택시 합승해서 마라탕 원정"],
+  missions:["1km 이내는 무조건 두 발로","버스에서 한 정거장 먼저 내리기","계단 오르며 '이건 탄소 감축 스쿼트다' 외치기"]},
+ food:{name:"급식실 티라노", tag:"식판 위 최상위 포식자", bg:"#FFC58F",
+  desc:"식판 위 초록색은 장식, 고기는 주인공. 그리고 가끔 반을 남깁니다. 진짜 공룡도 이 정도는 아니었어요.",
+  traits:["메뉴판에서 '제육'만 형광펜 칠한 듯 보인다","채소를 보면 '얘는 고기의 친구일 뿐'","1인분인데 2인분 같은 1인분을 시킨다"],
+  caution:"티라노는 결국 기후 변화로 사라졌… 아, 그건 소행성 때문이었습니다. 그래도 조심하세요.",
+  sci:"소처럼 되새김질하는 동물은 소화 과정에서 메테인을 만들어 트림으로 내보낸다. 메테인은 같은 양일 때 이산화 탄소보다 온실 효과가 훨씬 크다. 남긴 음식이 썩을 때도 메테인 같은 온실 기체가 생길 수 있다.",
+  src:"온실 기체(이산화 탄소, 메테인 등)의 개념: 통합과학 지구 환경 변화 단원",
+  best:["green","남긴 반찬 구조 요원"], worst:["shop","배달 음식+택배 상자 = 쓰레기 산맥"],
+  missions:["오늘 급식 잔반 제로 인증","일주일에 한 끼는 고기 대신 두부·콩","마라탕 바구니에 버섯 3종 추가"]},
+ shop:{name:"택배 상자 수집가", tag:"통장은 비고 옷장은 터진다", bg:"#F7D9B5",
+  desc:"'싸니까 이득'이라는 마법 주문으로 오늘도 결제 완료. 현관 앞에 택배 상자 탑이 쌓이고 있습니다.",
+  traits:["'품절 임박' 네 글자에 심장이 뛴다","산 줄도 몰랐던 택배가 도착한다","화방에 가면 '영감'이라는 이름으로 장바구니가 찬다"],
+  caution:"옷장 속 한 번도 안 입은 옷들이 단체로 시위 중입니다.",
+  sci:"물건 하나에도 원료를 캐고, 공장을 돌리고, 배송하는 단계마다 에너지가 든다. 값싼 옷에 많이 쓰이는 폴리에스터는 석유로 만든 합성 섬유라 만드는 순간부터 화석 연료가 쓰인다.",
+  src:"화석 연료 사용과 온실 기체: 통합과학 지구 환경 변화 단원",
+  best:["green","고쳐 쓰기 과외 선생님"], worst:["food","배달 음식+택배 상자 = 쓰레기 산맥"],
+  missions:["장바구니에 넣고 3일 숙성 후 결제","안 입는 옷 하나 친구와 교환","망친 연습지는 뒷면까지 쓰기"]},
+ power:{name:"에어컨의 정령", tag:"사계절이 내 리모컨 안에", bg:"#CDEFFF",
+  desc:"여름엔 북극, 겨울엔 적도. 바깥 날씨와 상관없이 방 안 기후를 지배하는 당신. 전기 요금 고지서가 당신을 두려워합니다.",
+  traits:["여름에 이불 덮으려고 에어컨을 더 세게 튼다","겨울엔 반팔 입고 아이스크림을 먹는다","아무도 없는 방에 불이 켜져 있다"],
+  caution:"관리비 고지서를 본 부모님 표정이 SSP5-8.5입니다.",
+  sci:"콘센트 속 전기는 공짜로 생기지 않는다. 화력 발전소에서는 연료의 화학 에너지가 열에너지, 운동 에너지를 거쳐 전기 에너지로 바뀐다. 우리나라 전기는 아직 상당 부분 화석 연료 발전에 기대고, 바뀔 때마다 일부 에너지는 쓸모없는 열로 흩어진다.",
+  src:"통합과학 교재 p.102 에너지의 흐름과 전환",
+  best:["green","내복의 세계로 인도할 사람"], worst:["digi","둘이 만나면 콘센트 쟁탈전"],
+  missions:["여름 냉방은 26℃ 근처 + 선풍기","방 나설 때 불·멀티탭 OFF","겨울엔 수면양말 먼저, 보일러는 그다음"]},
+ digi:{name:"와이파이 흡혈귀", tag:"밤마다 데이터를 빨아먹는 자", bg:"var(--lilac)",
+  desc:"자동 재생의 늪에서 헤엄치고, 같은 셀카 47장을 클라우드에 고이 모시는 당신. 데이터 센터 서버가 당신 이름을 부르며 땀을 흘립니다.",
+  traits:["'딱 한 편만'이 다섯 편이 된다","사진첩 맨 끝까지 스크롤해 본 적 없다","신상 폰 발표회는 생중계로 본다"],
+  caution:"당신의 사진첩은 이미 하나의 작은 우주입니다. 지금도 팽창 중.",
+  sci:"영상과 사진은 구름이 아니라 데이터 센터의 서버에 저장된다. 데이터 센터는 24시간 전기로 컴퓨터를 돌리고, 뜨거워진 서버를 식히는 데에도 전기를 쓴다. 새 휴대폰을 만들 때도 금속을 캐고 가공하는 에너지가 든다.",
+  src:"전기 에너지의 생산과 소비: 통합과학 에너지 단원",
+  best:["green","폰 내려놓기 메이트"], worst:["power","둘이 만나면 콘센트 쟁탈전"],
+  missions:["자동 재생 끄기","흔들린 사진·중복 셀카 50장 삭제","잘 때는 영상 끄고 휴대폰도 재우기"]},
+};
+
+/* ---------- 캐릭터 (모두 원작 SVG) ---------- */
+const INK = "#2B1E3F";
+const E = (x,y,r=9)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/><circle cx="${x+1}" cy="${y+1}" r="${r*.55}" fill="${INK}" stroke="none"/><circle cx="${x-r*.25}" cy="${y-r*.3}" r="${r*.22}" fill="#fff" stroke="none"/>`;
+const H = (x,y)=>`<path d="M${x-8} ${y+3}Q${x} ${y-8} ${x+8} ${y+3}" fill="none"/>`;
+const B = (x,y)=>`<ellipse cx="${x}" cy="${y}" rx="8" ry="5" fill="#FF7EB6" stroke="none" opacity=".8"/>`;
+const HEART = (x,y)=>`<path d="M${x} ${y+7}C${x-13} ${y-3} ${x-7} ${y-14} ${x} ${y-6}C${x+7} ${y-14} ${x+13} ${y-3} ${x} ${y+7}Z" fill="#FF7EB6" stroke-width="3"/>`;
+const CH = {
+ green:`<circle cx="160" cy="38" r="14" fill="#FFE066"/><path d="M160 15v-7M160 61v7M137 38h-7M183 38h7M144 22l-5-5M176 54l5 5M176 22l5-5M144 54l-5 5" fill="none" stroke-width="4"/>
+  <path d="M100 74V54" fill="none"/><path d="M100 56C84 36 64 42 56 28C76 22 96 32 100 56Z" fill="#B6F05A"/><path d="M100 56C118 34 138 40 146 24C124 20 104 32 100 56Z" fill="#7ED36A"/>
+  <path d="M44 126q-16-4-14-22M156 126q16-4 14-22" fill="none"/><ellipse cx="100" cy="126" rx="60" ry="54" fill="#8BE07A"/>
+  ${H(80,118)}${H(120,118)}${B(66,134)}${B(134,134)}<path d="M89 136Q100 152 111 136Z" fill="#FF6B4A"/>
+  <path d="M76 180v8M124 180v8" fill="none"/>`,
+ fire:`<circle cx="62" cy="30" r="13" fill="#E9E4F0"/><circle cx="80" cy="19" r="11" fill="#E9E4F0"/><circle cx="48" cy="15" r="9" fill="#E9E4F0"/>
+  <text x="100" y="32" font-family="Jua,sans-serif" font-size="18" fill="${INK}" stroke="none">CO₂</text>
+  <rect x="56" y="38" width="28" height="42" rx="4" fill="#FF8A3D"/><path d="M56 54h28" fill="none"/><rect x="118" y="52" width="22" height="28" rx="4" fill="#FF8A3D"/>
+  <rect x="36" y="72" width="128" height="104" rx="24" fill="#CFC6DE"/>
+  <path d="M68 99l17-6M132 99l-17-6" fill="none"/>${E(80,114,11)}${E(120,114,11)}${B(64,136)}${B(136,136)}
+  <ellipse cx="100" cy="150" rx="11" ry="9" fill="#FF6B4A"/><path d="M154 90q9 13 0 19q-9-6 0-19Z" fill="#7FD3FF" stroke-width="3"/>`,
+ mid:`<circle cx="88" cy="58" r="10" fill="#FF6B4A"/><circle cx="102" cy="51" r="11" fill="#FF6B4A"/><circle cx="116" cy="58" r="9" fill="#FF6B4A"/>
+  <path d="M86 176v12m-7 0h14M114 176v12m-7 0h14" fill="none"/>
+  <ellipse cx="42" cy="128" rx="14" ry="22" fill="#FFD35C" transform="rotate(20 42 128)"/><ellipse cx="158" cy="128" rx="14" ry="22" fill="#FF6B4A" transform="rotate(-20 158 128)"/>
+  <circle cx="100" cy="120" r="58" fill="#FF6B4A" stroke="none"/>
+  <path d="M100 62A58 58 0 0 0 100 178L92 160 106 146 92 132 106 118 92 104 106 90 92 76Z" fill="#FFD35C" stroke="none"/>
+  <path d="M100 62L92 76 106 90 92 104 106 118 92 132 106 146 92 160 100 178" fill="none" stroke-width="3"/><circle cx="100" cy="120" r="58" fill="none"/>
+  <ellipse cx="80" cy="106" rx="6" ry="8" fill="${INK}" stroke="none"/><circle cx="78" cy="103" r="2.2" fill="#fff" stroke="none"/>
+  <ellipse cx="120" cy="106" rx="6" ry="8" fill="${INK}" stroke="none"/><circle cx="118" cy="103" r="2.2" fill="#fff" stroke="none"/><path d="M90 124h20l-10 14Z" fill="#FF8A3D"/>${B(66,132)}`,
+ move:`<path d="M10 100h24M4 120h30M12 140h22" fill="none"/>
+  <path d="M70 68L74 38L90 54L100 30L110 54L126 38L130 68Z" fill="#FFE066"/><circle cx="100" cy="52" r="4" fill="#FF7EB6" stroke-width="2"/>
+  <ellipse cx="100" cy="110" rx="58" ry="50" fill="#7FD3FF"/>
+  <rect x="64" y="94" width="32" height="20" rx="8" fill="${INK}"/><rect x="104" y="94" width="32" height="20" rx="8" fill="${INK}"/><path d="M96 101h8" fill="none"/><path d="M70 100h9M110 100h9" stroke="#fff" stroke-width="3" fill="none"/>
+  <path d="M88 132Q104 140 118 127" fill="none"/>${B(60,124)}${B(140,124)}
+  <path d="M88 148l12 7 12-7v14l-12-7-12 7Z" fill="#FF7EB6" stroke-width="3"/>
+  <circle cx="68" cy="166" r="18" fill="${INK}"/><circle cx="68" cy="166" r="6" fill="#fff"/><circle cx="132" cy="166" r="18" fill="${INK}"/><circle cx="132" cy="166" r="6" fill="#fff"/>`,
+ food:`<path d="M82 62L90 40L101 58Z M100 56L111 34L122 54Z M120 58L133 40L138 62Z" fill="#B6F05A"/>
+  <path d="M62 150Q18 166 20 128Q38 146 64 132Z" fill="#FF9F4A"/><path d="M80 182h16M108 182h16" fill="none" stroke-width="8"/>
+  <ellipse cx="96" cy="150" rx="42" ry="34" fill="#FF9F4A"/><ellipse cx="96" cy="158" rx="22" ry="18" fill="#FFE0B8" stroke-width="3"/>
+  <ellipse cx="114" cy="92" rx="54" ry="40" fill="#FF9F4A"/>${E(98,82)}${E(132,82)}${B(80,100)}
+  <path d="M92 108Q124 126 160 102" fill="none"/><path d="M104 113l4 8 4-6M124 117l4 7 4-7M144 112l3 7 4-8" fill="#fff" stroke-width="3"/>
+  <path d="M120 142l12-5" fill="none"/><ellipse cx="146" cy="132" rx="14" ry="10" fill="#C9772E" transform="rotate(-30 146 132)"/><path d="M156 124l10-9" fill="none"/>
+  <circle cx="167" cy="111" r="4.5" fill="#fff" stroke-width="3"/><circle cx="172" cy="118" r="4.5" fill="#fff" stroke-width="3"/>`,
+ shop:`<rect x="8" y="144" width="34" height="30" rx="3" fill="#E0A96D"/><rect x="14" y="118" width="26" height="26" rx="3" fill="#F0C08A"/>
+  <path d="M50 72L68 48H178L160 72Z" fill="#F0C08A"/><path d="M160 72L178 48V146L160 172Z" fill="#C88D52"/><rect x="50" y="72" width="110" height="100" fill="#E0A96D"/>
+  <path d="M108 70L124 50" stroke="#FFF3D6" stroke-width="11" fill="none"/>
+  ${HEART(84,108)}${HEART(126,108)}<path d="M92 128Q105 148 118 128Z" fill="#FF6B4A"/>${B(68,128)}${B(142,128)}
+  <path d="M68 162v-11m-4 4 4-4 4 4M80 162v-11m-4 4 4-4 4 4" fill="none" stroke-width="3"/>`,
+ power:`<path d="M172 98l12 6" fill="none"/><rect x="180" y="96" width="12" height="26" rx="3" fill="#FF7EB6" transform="rotate(18 186 109)"/>
+  <rect x="26" y="56" width="148" height="80" rx="20" fill="#FFFFFF"/>
+  <rect x="124" y="66" width="38" height="18" rx="4" fill="${INK}"/><text x="130" y="80" font-family="Jua,sans-serif" font-size="14" fill="#B6F05A" stroke="none">18°</text>
+  ${E(74,94,9)}${H(112,95)}<path d="M82 108Q92 116 102 108" fill="none"/>${B(58,106)}${B(124,104)}
+  <path d="M42 120h116M42 128h116" fill="none" stroke-width="3"/>
+  <path d="M52 146q10 8 0 16t0 16M100 146q10 8 0 16t0 16M148 146q10 8 0 16t0 16" fill="none" stroke="#7FD3FF" stroke-width="6"/>
+  <path d="M22 160v14M15 167h14M17 162l10 10M27 162l-10 10M178 152v14M171 159h14M173 154l10 10M183 154l-10 10" fill="none" stroke-width="3"/>`,
+ digi:`<path d="M74 38Q100 14 126 38M85 50Q100 36 115 50" fill="none"/><circle cx="100" cy="58" r="5" fill="${INK}"/>
+  <path d="M38 178L58 96H142L162 178L132 164L100 184L68 164Z" fill="#5A2D82"/>
+  <path d="M62 122L46 84L86 108Z M138 122L154 84L114 108Z" fill="#FF6B4A"/>
+  <circle cx="100" cy="114" r="46" fill="#C9B6FF"/><path d="M55 104Q58 68 100 68Q142 68 145 104Q122 88 100 103Q78 88 55 104Z" fill="${INK}"/>
+  ${E(84,116)}${E(116,116)}<path d="M74 129q10 4 20 0M106 129q10 4 20 0" fill="none" stroke="#7A5BD0" stroke-width="3"/>
+  <path d="M88 140Q100 146 112 140" fill="none"/><path d="M92 141l3 8 3-7M104 142l3 7 3-8" fill="#fff" stroke-width="2.5"/>
+  <path d="M138 146h12" fill="none"/><rect x="148" y="128" width="22" height="36" rx="5" fill="${INK}"/><rect x="152" y="134" width="14" height="22" rx="2" fill="#7FD3FF" stroke="none"/>`,
+};
+const char = (k,label="")=>`<svg viewBox="0 0 200 200" ${label?`role="img" aria-label="${label}"`:'aria-hidden="true"'}><g stroke="${INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">${CH[k]}</g></svg>`;
+const foot = fill=>`<svg viewBox="0 0 60 90" aria-hidden="true"><g fill="${fill}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"><path d="M30 34C44 33 50 46 48 61 46 76 40 85 30 85 20 85 14 76 13 62 12 47 17 35 30 34Z"/><circle cx="14" cy="26" r="5"/><circle cx="22" cy="16" r="5.5"/><circle cx="32" cy="11" r="6.2"/><circle cx="42" cy="14" r="5"/><circle cx="49" cy="23" r="4"/></g></svg>`;
+
+const LOAD_MSG = ["발자국 크기 재는 중…","급식판 스캔하는 중…","택배 상자 세는 중…","에어컨 리모컨 압수하는 중…","북극곰에게 결과 전송 중…"];
+
+// 점수 계산 → 유형
+function judge(picks){
+  const sum = {move:0,food:0,shop:0,power:0,digi:0};
+  Q.forEach((q,i)=> sum[q.c] += picks[i] ?? 0);
+  const ratio = {}; for(const k in sum) ratio[k] = sum[k]/9;   // 영역당 3문항 × 최대 3점
+  const total = Math.round(Object.values(sum).reduce((a,b)=>a+b,0)/45*100);
+  const vals = Object.values(ratio), max = Math.max(...vals), min = Math.min(...vals);
+  const top = Object.keys(ratio).find(k=>ratio[k]===max);
+  let type;
+  if(total >= 75) type = "fire";
+  else if(total <= 22 && max < 0.5) type = "green";
+  else if(max - min < 0.25) type = "mid";
+  else type = top;
+  return {type, total, ratio};
+}
+console.assert(judge(Q.map(()=>0)).type==="green");
+console.assert(judge(Q.map(()=>3)).type==="fire");
+console.assert(judge(Q.map(q=>q.c==="food"?3:0)).type==="food");
+console.assert(judge(Q.map(()=>1)).type==="mid");
+
+const $ = id => document.getElementById(id);
+function show(id){ ["intro","quiz","loading","result"].forEach(s=> $(s).hidden = s!==id); window.scrollTo(0,0); }
+
+let picks = [], cur = 0, order = [];
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function renderQ(){
+  const q = Q[cur];
+  $("qnum").textContent = `${cur+1}번째 발자국 / ${Q.length}`;
+  $("qcat").textContent = CATS[q.c];
+  $("qcat").style.background = CAT_COLOR[q.c];
+  $("steps").innerHTML = Q.map((_,i)=> foot(i<cur?"#B6F05A":i===cur?"#FF7EB6":"#fff").replace("<svg",`<svg class="${i===cur?'on':''}"`)).join("");
+  $("qtext").textContent = q.q;
+  $("back").hidden = cur===0;
+  $("answers").innerHTML = order[cur].map((a,i)=>
+    `<button class="ans" data-p="${a[1]}"><b>${"ABCD"[i]}</b><span>${a[0]}</span></button>`).join("");
+}
+$("answers").addEventListener("click", e=>{
+  const b = e.target.closest(".ans"); if(!b || b.disabled) return;
+  $("answers").querySelectorAll(".ans").forEach(x=>x.disabled=true);
+  b.classList.add("picked");
+  picks[cur] = +b.dataset.p;
+  setTimeout(()=>{ cur++; cur < Q.length ? renderQ() : finish(); }, 280);
+});
+$("back").onclick = ()=>{ if(cur>0){ cur--; renderQ(); } };
+$("start").onclick = ()=>{ picks=[]; cur=0; order = Q.map(q=>shuffle(q.a)); show("quiz"); renderQ(); };
+
+function finish(){
+  show("loading");
+  const res = judge(picks);
+  // 실루엣을 무작위 순서로 계속 바꿔 결과를 알 수 없게 함
+  const keys = shuffle(Object.keys(TYPES));
+  let i = 0; $("loadMsg").textContent = LOAD_MSG[0]; $("loadChar").innerHTML = char(keys[0]);
+  const t = setInterval(()=>{ i++;
+    $("loadChar").innerHTML = char(keys[i % keys.length]);
+    if(i % 2 === 0) $("loadMsg").textContent = LOAD_MSG[(i/2) % LOAD_MSG.length];
+  }, 250);
+  setTimeout(()=>{ clearInterval(t); renderResult(res); }, 2300);
+}
+
+function lvOf(r){ return r<0.25?["새싹","var(--lime)"]: r<0.5?["보통","var(--butter)"]: r<0.75?["많음","var(--tang)"]:["폭주","var(--red)"]; }
+
+function sspChart(total){
+  // 교과서 p.124 그래프의 모양만 단순화. x: 2020→40, 2100→300 / y: 0℃→120, 4℃→20
+  const t = Math.min(1, Math.max(0, (total-20)/60));
+  const y = 78 - (78-22)*t;
+  return `<svg viewBox="0 0 340 150" role="img" aria-label="기후 변화 시나리오에서 당신의 위치" font-family="Gowun Dodum,sans-serif">
+   <path d="M40 20V120H300" fill="none" stroke="${INK}" stroke-width="2"/>
+   <text x="6" y="24" font-size="11" fill="#6B5B7B">4℃</text><text x="6" y="124" font-size="11" fill="#6B5B7B">0℃</text>
+   <text x="28" y="140" font-size="11" fill="#6B5B7B">2020</text><text x="284" y="140" font-size="11" fill="#6B5B7B">2100</text>
+   <polyline points="40,95 105,86 170,80 235,78 300,78" fill="none" stroke="#3FA34D" stroke-width="5" stroke-linecap="round"/>
+   <polyline points="40,95 105,84 170,68 235,47 300,22" fill="none" stroke="#FF6B4A" stroke-width="5" stroke-linecap="round"/>
+   <text x="140" y="100" font-size="11" fill="${INK}">감축에 적극 노력 (SSP1-2.6)</text>
+   <text x="106" y="40" font-size="11" fill="${INK}">감축 없이 화석 연료 (SSP5-8.5)</text>
+   <circle cx="300" cy="${y}" r="9" fill="#FF7EB6" stroke="${INK}" stroke-width="3"/>
+   <text x="313" y="${y+5}" font-size="14" fill="${INK}" font-family="Jua,sans-serif">나</text>
+  </svg>`;
+}
+
+function renderResult({type,total,ratio}){
+  const T = TYPES[type];
+  const forecast = total < 40
+    ? "모두가 당신처럼 산다면 지구는 <b>온실 기체 감축에 적극 노력한 시나리오</b> 쪽으로 갑니다. 교과서에 따르면 이 경우 2100년 지표 기온은 현재와 비슷하게 유지될 것으로 예측됩니다."
+    : total < 65
+    ? "모두가 당신처럼 산다면 지구는 두 시나리오 <b>사이 어딘가</b>를 걷습니다. 아직 정해지지 않은 미래. 영수증에서 가장 긴 막대 하나만 줄여도 초록 선에 가까워집니다."
+    : "모두가 당신처럼 산다면 지구는 <b>감축 노력 없이 화석 연료를 계속 쓴 시나리오</b>로 직행합니다. 교과서에 따르면 이 경우 2100년 지표 기온이 지금보다 약 4℃ 높아질 것으로 예측됩니다.";
+  const rows = Object.keys(CATS).map(k=>{
+    const [lab,col] = lvOf(ratio[k]);
+    return `<div class="r-row"><span>${CATS[k]}</span><span class="r-bar"><i style="width:${Math.max(6,ratio[k]*100)}%;background:${col}"></i></span><span class="r-lv">${lab}</span></div>`;
+  }).join("");
+  const mate = (m,label,col)=>`<div class="sticker mate">${char(m[0])}<small style="background:${col}">${label}</small><strong>${TYPES[m[0]].name}</strong><span>${m[1]}</span></div>`;
+
+  $("result").innerHTML = `
+  <article class="sticker rhero" style="background:${T.bg}">
+    <p class="intro">당신의 탄소 발자국 유형은</p>
+    <div class="stage">${char(type, T.name+" 캐릭터")}<p class="bubble">${T.tag}</p></div>
+    <h1 class="name">${T.name}</h1>
+    <p class="desc">${T.desc}</p>
+  </article>
+
+  <div class="sticker meter">
+    <div class="meter-row"><span>탄소 지수</span><strong>${total}<small style="font-size:16px"> / 100</small></strong></div>
+    <div class="gauge">${foot("#FF7EB6").replace("<svg",`<svg style="left:0%" id="gfoot"`)}</div>
+    <div class="gauge-ends"><span>광합성급</span><span>화력발전소급</span></div>
+  </div>
+
+  <div class="sec"><h2 class="label" style="background:var(--butter)">탄소 영수증</h2>
+    <div class="receipt"><div class="r-title">CARBON RECEIPT</div>${rows}
+      <div class="r-total"><span>합계 탄소 지수</span><span>${total} / 100</span></div></div>
+  </div>
+
+  <div class="sec"><h2 class="label" style="background:var(--pink)">이런 모습, 혹시 당신?</h2>
+    <div class="sticker box"><ul>${T.traits.map(t=>`<li>${t}</li>`).join("")}</ul></div></div>
+
+  <div class="sec"><h2 class="label" style="background:var(--red)">주의 경보</h2><p class="sticker box">${T.caution}</p></div>
+
+  <div class="sec"><h2 class="label" style="background:var(--lime)">과학 한 스푼</h2>
+    <div class="sticker box"><p>${T.sci}</p><p class="src">관련 개념: ${T.src}</p></div></div>
+
+  <div class="sec ssp"><h2 class="label" style="background:var(--sky)">평행우주 기후 예보</h2>
+    <div class="sticker box">${sspChart(total)}<p style="margin-top:8px">${forecast}</p>
+    <p class="src">그래프는 교과서 p.124 '기후 변화 시나리오에 따른 지구 지표 기온 변화'의 모양만 단순화한 그림입니다. 개인 한 명의 습관으로 시나리오가 정해지는 것은 아닙니다.</p></div>
+  </div>
+
+  <div class="sec"><h2 class="label" style="background:var(--lilac)">환경 궁합</h2><div class="mates">
+    ${mate(T.best,"환상의 짝꿍","var(--lime)")}${mate(T.worst,"위험한 조합","var(--red)")}</div></div>
+
+  <div class="sec"><h2 class="label" style="background:var(--butter)">오늘의 탄소 다이어트 미션</h2>
+    <div class="sticker box"><ul class="missions">${T.missions.map(m=>`<li tabindex="0"><span>${m}</span></li>`).join("")}</ul>
+    <p class="src">완료한 미션을 눌러 체크해 보세요.</p></div></div>
+
+  <div class="actions">
+    <button class="btn" id="copy">결과 복사해서 자랑하기</button>
+    <button class="btn alt" id="again">다시 검사하기</button>
+  </div>
+
+  <div class="sec"><h2 class="label" style="background:var(--pink)">여덟 친구 모아 보기</h2><div class="all">
+    ${Object.entries(TYPES).map(([k,v])=>`<div class="${k===type?'me':''}" style="background:${v.bg}">${char(k)}<strong>${v.name}</strong></div>`).join("")}</div></div>
+
+  <p class="note">실제 탄소 배출량을 계산하는 검사가 아닙니다. 생활 습관을 돌아보는 재미형 자기 점검 테스트입니다.</p>`;
+
+  $("again").onclick = ()=> show("intro");
+  $("copy").onclick = e=>{
+    const txt = `[탄소 발자국 유형 검사] 나는 '${T.name}' — ${T.tag} (탄소 지수 ${total}/100)`;
+    const btn = e.currentTarget;
+    navigator.clipboard.writeText(txt).then(()=> btn.textContent="복사 완료! 단톡방에 붙여 넣기",
+      ()=> btn.textContent="복사가 막혔어요. 화면을 캡처해 주세요");
+  };
+  $("result").querySelectorAll(".missions li").forEach(li=>{
+    const tog = ()=> li.classList.toggle("done");
+    li.onclick = tog; li.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tog(); } };
+  });
+  show("result");
+  requestAnimationFrame(()=> requestAnimationFrame(()=> $("gfoot").style.left = total+"%"));
+}
+
+$("parade").innerHTML = Object.entries(TYPES).map(([k,v])=>`<div style="background:${v.bg}">${char(k)}</div>`).join("");
+</script>
+
+</body></html>
